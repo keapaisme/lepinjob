@@ -7,7 +7,7 @@ import urllib.error
 
 # keytitle = input("請輸入要搜尋的工作 :")
 # keycity = input("請輸入要搜尋的地區 :") 090200成都,010000北京,040000深圳,000000所有
-keytitle = "洗衣" # 測試用,正常使用時改以上方方式輸入
+keytitle = "python" # 測試用,正常使用時改以上方方式輸入
 pageNum = 1
 kw = parse.quote(parse.quote(keytitle))  # 原網站將中文編譯兩次所以出現%25字節
 
