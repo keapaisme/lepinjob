@@ -5,7 +5,6 @@
 # @Software:PyCharm
 
 from bs4 import BeautifulSoup
-import re
 import urllib.request
 from urllib import parse
 import urllib.error
@@ -15,8 +14,8 @@ import sqlite3
 # keytitle = input("請輸入要搜尋的工作 :")
 # keycity = input("請輸入要搜尋的地區 :") 090200成都,010000北京,040000深圳,000000所有
 keycity = "000000"
-keyTitle = "洗衣房"  # 測試用,正常使用時改以上方方式輸入
-job_keyword = "洗"
+keyTitle = "洗涤"  # 測試用,正常使用時改以上方方式輸入
+job_keyword = "经理"
 # pageNum = 0  # 51job 要用1, 猎聘用0
 kw = parse.quote(parse.quote(keyTitle))  # 原網站將中文編譯兩次所以出現%25字節
 
@@ -36,7 +35,8 @@ def main():
         page_number = get_data(url)
         if len(page_number) == 0:
             break
-
+    dbpath = "job_result.db"
+    save_data_2db(job_list, dbpath)
 
 def ask_url(url):
     head = {"User-Agent": "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Mobile Safari/537.36"}
@@ -67,22 +67,72 @@ def get_data(url):
             job_list.append({"link": n['href'], "location": n.em.string, "company": n.aside.string, "job": n.span.string, "salary": n.i.string})
         #   print(job_list, end="\n")  # 列出符合篩選的工作列表
         #   print(job_list[x-1]['job'], job_list[x-1]['salary'])  # 印出己經篩選過職位JOB有包括job_keyword的職位名稱
-            print(n.em.string, n.aside.string, n.span.string, n.i.string)
+        #   print(n.em.string, n.aside.string, n.span.string, n.i.string)
         else:
             pass
     return result_link
 
 
 def save_data_2db(detail, dbpath):
-    pass
+    init_db(dbpath)
+    conn = sqlite3.connect(dbpath)
+    cur = conn.cursor()
+    # 執行SQL語句X次,寫入每个工作5个資料
+    # 去除特殊符號 str.replace("/r","") 替換"/r"為空白
+    # 字符串截取: str.[n:m] 截取从下标n到m个字符
+    # 語法 info = days[0]["title"].split("|")   # 去除前后空格 str.strip()
+
+    for data in job_list:
+        # sql = '''insert into job (detail_link,location,company,job,salary) values ('%s','%s','%s','%s','%s')''' % (
+        # data['link'], data['location'], data['company'], data['job'], data['salary'])
+        # 3.5-5千/月 , 15-20万/年 , 7.5-8千/月 , 3-4.5千/月
+        a = data['salary']
+        '''若原始薪資資料無填寫,data['salary']會為None,所以將其轉成字串格式0元'''
+        # print(type(a))
+        if str(a) == 'None':
+            a = "-0千/月"
+            b = 0
+            # print('--------------', a)
+        b = 1
+        if "万/年" in a:
+            b = 0.83333333
+        elif "万/月" in a:
+            b = 10
+        a = a[a.find("-") + 1:a.find('/') - 1]
+        salary = float(a) * b * 1000
+        # print(salary)
+
+        sql = '''insert into job (detail_link,location,company,job,salary) 
+            values ('%s','%s','%s','%s','%s')''' % (data['link'], data['location'], data['company'], data['job'], salary)
+
+        cur.execute(sql)
+        conn.commit()
+    cur.close()
+    conn.close()
 
 
 def init_db(dbpath):
-    pass
+    sql = '''
+            create table if not exists job
+            (
+            id integer primary key autoincrement,
+            detail_link text,
+            location text,
+            company text,
+            job text ,
+            salary numeric 
+            )
+            '''
+    conn = sqlite3.connect(dbpath)
+    cursor = conn.cursor()
+    cursor.execute(sql)
+    conn.commit()
+    conn.close()
 
 
 if __name__ == "__main__":
     main()
     print("爬取 over", end='\n')
     print('%s地區共有%d筆符合查詢' % (keycity, len(job_list)))
+    # print(job_list)
 

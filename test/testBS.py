@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 '''
 這裡使用 encoding="utf-8" 否則BS報錯 BeautifulSoup 報錯UnicodeDecodeError
 '''
-listhtml = open("page.html", "r", encoding="utf-8")
+listhtml = open("../page.html", "r", encoding="utf-8")
 bs = BeautifulSoup(listhtml, "html.parser")
 
 result_link = bs.select(".list .e.e3")  # 選擇器,ID用#,class用.,往下層級用>

@@ -42,11 +42,8 @@ def getData(baseurl):
         url = baseurl
         # print(url)  # 測試有否正常捉取網頁
         html = askURL(url)
-        print(html)
-
-
+        # print(html)
     return datalist
-
 
 
 if __name__=="__main__":
