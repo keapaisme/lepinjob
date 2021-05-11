@@ -12,9 +12,9 @@ import sqlite3
 
 # baseurl = "https://www.liepin.com/zhaopin/?init=-1&fromSearchBtn=2&degradeFlag=0&key=" + parse.quote(keytitle) + "&d_sfrom=search_unknown&d_pageSize=40&curPage=%d"%pageNum  # 猎聘
 # keytitle = input("請輸入要搜尋的工作 :")
-# keycity = input("請輸入要搜尋的地區 :") 090200成都,010000北京,040000深圳,000000所有
+# keycity = input("請輸入要搜尋的地區 :") 340000澳門,090200成都,010000北京,040000深圳,000000所有
 keycity = "000000"
-keyTitle = "洗涤"  # 測試用,正常使用時改以上方方式輸入
+keyTitle = "洗"  # 測試用,正常使用時改以上方方式輸入
 job_keyword = "经理"
 # pageNum = 0  # 51job 要用1, 猎聘用0
 kw = parse.quote(parse.quote(keyTitle))  # 原網站將中文編譯兩次所以出現%25字節
@@ -37,6 +37,7 @@ def main():
             break
     dbpath = "job_result.db"
     save_data_2db(job_list, dbpath)
+
 
 def ask_url(url):
     head = {"User-Agent": "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Mobile Safari/537.36"}
@@ -89,17 +90,22 @@ def save_data_2db(detail, dbpath):
         a = data['salary']
         '''若原始薪資資料無填寫,data['salary']會為None,所以將其轉成字串格式0元'''
         # print(type(a))
+
         if str(a) == 'None':
             a = "-0千/月"
             b = 0
-            # print('--------------', a)
+        if "千以" in a:
+            a = "-0千/月"
+            b = 0
         b = 1
         if "万/年" in a:
             b = 0.83333333
         elif "万/月" in a:
             b = 10
+
         a = a[a.find("-") + 1:a.find('/') - 1]
         salary = float(a) * b * 1000
+
         # print(salary)
 
         sql = '''insert into job (detail_link,location,company,job,salary) 
@@ -134,5 +140,5 @@ if __name__ == "__main__":
     main()
     print("爬取 over", end='\n')
     print('%s地區共有%d筆符合查詢' % (keycity, len(job_list)))
-    # print(job_list)
+    print(job_list)
 

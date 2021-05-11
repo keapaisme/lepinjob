@@ -1,3 +1,4 @@
 select salary, job, company from job where company like('%洗%') and salary >= 20000
 order by salary desc limit 5;
 
+select detail_link, job, company, substr(location,0,3) as area, salary from job where job like('%洗%') order by salary desc
